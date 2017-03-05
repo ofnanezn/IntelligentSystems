@@ -72,6 +72,22 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+def general_ui_search(problem, frontier):
+    visited = {}
+    state = problem.getStartState()
+    frontier.push((state, []))
+    visited[state] = 'gray'
+    while not frontier.isEmpty():
+        u, actions = frontier.pop()
+        if problem.isGoalState(u):
+            return actions
+        for v, action, cost in problem.getSuccessors(u):
+            if not v in visited:
+                visited[v] = 'gray'
+                frontier.push((v, actions + [action]))
+        visited[u] = 'black'
+    return []
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -92,7 +108,8 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return general_ui_search(problem, util.Queue())
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
@@ -106,11 +123,23 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+def general_search(problem, frontier):
+    visited = {}
+    state = problem.getStartState()
+    frontier.push((state, [], 0))
+    while not frontier.isEmpty():
+        u, actions, path_cost = frontier.pop()
+        if problem.isGoalState(u):
+            return  actions
+        if not u in visited:
+            for v, action, cost in problem.getSuccessors(u):
+                frontier.push((v, actions + [action], path_cost + cost))
+        visited[u] = 'black'
+    return []
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    #return ['West','West','South','South','East','South','East','East','East','North','North','North','West','East','South','South','West','South','West','West','South','West']
-
     s = problem.getStartState()
     frontier = util.PriorityQueue()
     frontier.push((s,[]),0)

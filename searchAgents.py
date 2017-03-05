@@ -556,6 +556,7 @@ class CornersAndCapsulesProblem(search.SearchProblem):
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add your code here
         self.start = (startingGameState.getPacmanPosition(),startingGameState.getFood(),tuple(startingGameState.getCapsules()))
+        self.startingGameState = startingGameState
 
     def getStartState(self):
         """
@@ -610,6 +611,37 @@ class CornersAndCapsulesProblem(search.SearchProblem):
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
+    """def getSuccessors(self, state):
+        successors = []
+                
+        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            #Add your code here
+            ateSomething = False
+            x,y = state[0]
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                if len(state[2]) > 0 and not state[1][nextx][nexty]:
+                    nextFood = state[1].copy()
+                    nextCapsule = list(state[2])
+                    nextFood[nextx][nexty] = False
+                    if (nextx,nexty) in nextCapsule:
+                        nextCapsule.remove((nextx,nexty))
+                        ateSomething = True
+                    if ateSomething:
+                        successors.append( (((nextx, nexty), nextFood, tuple(nextCapsule)), action, 0) )
+                    else:
+                        successors.append( (((nextx, nexty), nextFood, tuple(nextCapsule)), action, 1) )
+                elif len(state[2]) == 0:
+                    nextFood = state[1].copy()
+                    ateSomething = nextFood[nextx][nexty]
+                    nextFood[nextx][nexty] = False
+                    if ateSomething:
+                        successors.append( (((nextx, nexty), nextFood, ()), action, 0) )
+                    else:
+                        successors.append( (((nextx, nexty), nextFood, ()), action, 1) )"""
+
     def getCostOfActions(self, actions):
         """
         Returns the cost of a particular sequence of actions.  If those actions
@@ -643,6 +675,7 @@ def getClosestPill(pacmanPos,pills):
             closestPill = (item,closest)
     return closestPill
 
+
 def cornersAndCapsulesHeuristic(state, problem):
     """
     A heuristic for the CornersAndCapsules problem that you defined.
@@ -656,7 +689,8 @@ def cornersAndCapsulesHeuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
-    pacmanPos = state[0]
+    #Heuristic 1
+    """pacmanPos = state[0]
     steps = 0
     for item in state[2]:
         steps += abs(pacmanPos[0] - item[0]) + abs(pacmanPos[1] - item[1])
@@ -668,27 +702,64 @@ def cornersAndCapsulesHeuristic(state, problem):
                 steps += abs(pacmanPos[0] - i) + abs(pacmanPos[1] - j)
     if state[1].count() > 0:
         steps /= state[1].count()
-    return steps
-    
+    return steps"""
 
-    """pacmanPos = state[0]
-    steps = 0
+    #Better Heuristic
+    pacmanPos = state[0]
     pills = state[2]
     dots = []
     for i in xrange(state[1].width):
         for j in xrange(state[1].height):
             if state[1][i][j]:
                 dots.append((i,j))
-    dotSz = len(dots)
-    for i in xrange(dotSz):
-        (next_pos,closestDot) = getClosestDot(pacmanPos,dots)
-        steps += closestDot
-        pacmanPos = next_pos
-    for i in xrange(len(state[2])):
-        (next_pos,closestPill) = getClosestDot(pacmanPos,pills)
-        steps += closestPill
-        pacmanPos = next_pos
-    return steps"""
+    #print dots
+    distPills = 0
+    for item in pills:
+         distPills = max(distPills,mazeDistance(pacmanPos,item,problem.startingGameState))
+    distDots = 0
+    for item in dots:
+        distDots = max(distDots,mazeDistance(pacmanPos,item,problem.startingGameState))
+    cost = max(distPills, distDots)
+    return  cost
+
+    #Heuristic 3
+    """pacmanPos = state[0]
+    pills = state[2]
+    dots = []
+    for i in xrange(state[1].width):
+        for j in xrange(state[1].height):
+            if state[1][i][j]:
+                dots.append((i,j))
+    #print dots
+    distPills = 0
+    for item in pills:
+        (pos,distMaze) = mazeDistance(pacmanPos,item,problem.startingGameState)
+        if distMaze > distPills:
+            distPills = distMaze
+            pacmanPos = pos
+    distDots = 0
+    for item in dots:
+        (pos,distMaze) = mazeDistance(pacmanPos,item,problem.startingGameState)
+        distDots = max(distDots,distMaze)
+    return distPills + distDots"""
+
+    #Heuristic 4
+    """pacmanPos = state[0]
+    pills = state[2]
+    dots = []
+    for i in xrange(state[1].width):
+        for j in xrange(state[1].height):
+            if state[1][i][j]:
+                dots.append((i,j))
+    #print dots
+    steps = 0
+    if len(pills) > 0:
+        for item in pills:
+            steps = max(steps,mazeDistance(pacmanPos,item,problem.startingGameState))
+    else:
+        for item in dots:
+            steps = max(steps,mazeDistance(pacmanPos,item,problem.startingGameState))
+    return  steps"""
 
 
 
