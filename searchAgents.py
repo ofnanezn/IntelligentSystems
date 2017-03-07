@@ -145,7 +145,7 @@ class PositionSearchProblem(search.SearchProblem):
     Note: this search problem is fully specified; you should NOT change it.
     """
 
-    def __init__(self, gameState, costFn = lambda x: 1, goal=(1,1), start=None, warn=True, visualize=True):
+    def __init__(self, gameState, costFn = lambda x: 1, goal=(1,1), start=None, warn=True, visualize=True, isPill=True):
         """
         Stores the start and goal.
 
@@ -159,8 +159,8 @@ class PositionSearchProblem(search.SearchProblem):
         self.goal = goal
         self.costFn = costFn
         self.visualize = visualize
-        self.food = gameState.getFood()
-        self.capsules = gameState.getCapsules()
+        self.gameState = gameState
+        self.isPill = isPill
         if warn and (gameState.getNumFood() != 1 or not gameState.hasFood(*goal)):
             print 'Warning: this does not look like a regular search maze'
 
@@ -195,15 +195,23 @@ class PositionSearchProblem(search.SearchProblem):
          cost of expanding to that successor
         """
         successors = []
-        #prob = CornersAndCapsulesProblem((state,gameState.getFood(),gameState.getCapsules()))
+        problem = CornersAndCapsulesProblem(self.gameState)
+        prob = problem.startingGameState
+        food = prob.getFood()
+        capsules = prob.getCapsules()
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x,y = state
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             if not self.walls[nextx][nexty]:
-                nextState = (nextx, nexty)
-                cost = self.costFn(nextState)
-                successors.append( ( nextState, action, cost) )
+                if self.isPill and not food[nextx][nexty]:  
+                    nextState = (nextx, nexty)
+                    cost = self.costFn(nextState)
+                    successors.append( ( nextState, action, cost) )
+                elif not self.isPill:
+                    nextState = (nextx, nexty)
+                    cost = self.costFn(nextState)
+                    successors.append( ( nextState, action, cost) )
 
         # Bookkeeping for display purposes
         self._expanded += 1 # DO NOT CHANGE
@@ -537,14 +545,14 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
     return search.bfs(prob,isPill,dots)"""
 
-def mazeDistance(point1, point2, gameState):
+def mazeDistance(point1, point2, gameState, Pill):
 
     x1, y1 = point1
     x2, y2 = point2
     walls = gameState.getWalls()
     assert not walls[x1][y1], 'point1 is a wall: ' + str(point1)
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
-    prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
+    prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False, isPill=Pill)
     return len(search.bfs(prob))
 
 class CornersAndCapsulesProblem(search.SearchProblem):
@@ -730,14 +738,14 @@ def cornersAndCapsulesHeuristic(state, problem):
     distPills = 0
     auxPos = pacmanPos
     for pos in pills:
-        distMaze = mazeDistance(pacmanPos,pos,problem.startingGameState)
+        distMaze = mazeDistance(pacmanPos,pos,problem.startingGameState,True)
         if distMaze > distPills:
             distPills = distMaze
             auxPos = pos
     pacmanPos = auxPos
     distDots = 0
     for pos in dots:
-        distMaze = mazeDistance(pacmanPos,pos,problem.startingGameState)
+        distMaze = mazeDistance(pacmanPos,pos,problem.startingGameState,False)
         distDots = max(distDots,distMaze)
     cost = distPills + distDots
     #print distPills, distDots,state[0]
