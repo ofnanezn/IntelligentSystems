@@ -159,6 +159,8 @@ class PositionSearchProblem(search.SearchProblem):
         self.goal = goal
         self.costFn = costFn
         self.visualize = visualize
+        self.food = gameState.getFood()
+        self.capsules = gameState.getCapsules()
         if warn and (gameState.getNumFood() != 1 or not gameState.hasFood(*goal)):
             print 'Warning: this does not look like a regular search maze'
 
@@ -192,8 +194,8 @@ class PositionSearchProblem(search.SearchProblem):
          required to get there, and 'stepCost' is the incremental
          cost of expanding to that successor
         """
-
         successors = []
+        #prob = CornersAndCapsulesProblem((state,gameState.getFood(),gameState.getCapsules()))
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x,y = state
             dx, dy = Actions.directionToVector(action)
@@ -210,6 +212,7 @@ class PositionSearchProblem(search.SearchProblem):
             self._visitedlist.append(state)
 
         return successors
+
 
     def getCostOfActions(self, actions):
         """
@@ -524,16 +527,18 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
+"""def mazeDistance(point1, point2, gameState, isPill, dots):
+
+    x1, y1 = point1
+    x2, y2 = point2
+    walls = gameState.getWalls()
+    assert not walls[x1][y1], 'point1 is a wall: ' + str(point1)
+    assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
+    prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
+    return search.bfs(prob,isPill,dots)"""
+
 def mazeDistance(point1, point2, gameState):
-    """
-    Returns the maze distance between any two points, using the search functions
-    you have already built. The gameState can be any game state -- Pacman's
-    position in that state is ignored.
 
-    Example usage: mazeDistance( (2,4), (5,6), gameState)
-
-    This might be a useful helper function for your ApproximateSearchAgent.
-    """
     x1, y1 = point1
     x2, y2 = point2
     walls = gameState.getWalls()
@@ -541,7 +546,6 @@ def mazeDistance(point1, point2, gameState):
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
     return len(search.bfs(prob))
-
 
 class CornersAndCapsulesProblem(search.SearchProblem):
     def __init__(self, startingGameState):
@@ -572,15 +576,7 @@ class CornersAndCapsulesProblem(search.SearchProblem):
         return state[1].count() == 0 and len(state[2]) == 0
 
     def getSuccessors(self, state):
-        """
-        Returns successor states, the actions they require, and a cost of 1.
 
-         As noted in search.py:
-            For a given state, this should return a list of triples, (successor,
-            action, stepCost), where 'successor' is a successor to the current
-            state, 'action' is the action required to get there, and 'stepCost'
-            is the incremental cost of expanding to that successor
-        """
         successors = []
                 
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
@@ -705,7 +701,7 @@ def cornersAndCapsulesHeuristic(state, problem):
     return steps"""
 
     #Better Heuristic
-    pacmanPos = state[0]
+    """pacmanPos = state[0]
     pills = state[2]
     dots = []
     for i in xrange(state[1].width):
@@ -720,10 +716,10 @@ def cornersAndCapsulesHeuristic(state, problem):
     for item in dots:
         distDots = max(distDots,mazeDistance(pacmanPos,item,problem.startingGameState))
     cost = max(distPills, distDots)
-    return  cost
+    return  cost"""
 
     #Heuristic 3
-    """pacmanPos = state[0]
+    pacmanPos = state[0]
     pills = state[2]
     dots = []
     for i in xrange(state[1].width):
@@ -732,16 +728,20 @@ def cornersAndCapsulesHeuristic(state, problem):
                 dots.append((i,j))
     #print dots
     distPills = 0
-    for item in pills:
-        (pos,distMaze) = mazeDistance(pacmanPos,item,problem.startingGameState)
+    auxPos = pacmanPos
+    for pos in pills:
+        distMaze = mazeDistance(pacmanPos,pos,problem.startingGameState)
         if distMaze > distPills:
             distPills = distMaze
-            pacmanPos = pos
+            auxPos = pos
+    pacmanPos = auxPos
     distDots = 0
-    for item in dots:
-        (pos,distMaze) = mazeDistance(pacmanPos,item,problem.startingGameState)
+    for pos in dots:
+        distMaze = mazeDistance(pacmanPos,pos,problem.startingGameState)
         distDots = max(distDots,distMaze)
-    return distPills + distDots"""
+    cost = distPills + distDots
+    #print distPills, distDots,state[0]
+    return cost
 
     #Heuristic 4
     """pacmanPos = state[0]
@@ -761,7 +761,59 @@ def cornersAndCapsulesHeuristic(state, problem):
             steps = max(steps,mazeDistance(pacmanPos,item,problem.startingGameState))
     return  steps"""
 
+    #Better Heuristic 2
+    """pacmanPos = state[0]
+    pills = state[2]
+    dots = []
+    for i in xrange(state[1].width):
+        for j in xrange(state[1].height):
+            if state[1][i][j]:
+                dots.append((i,j))
+    #print dots
+    distPills = 0
+    auxPos = pacmanPos
+    isPill = True
+    for item in pills:
+        (pos,distMaze) = mazeDistance(pacmanPos,item,problem.startingGameState,isPill,dots)
+        if distMaze > distPills:
+            distPills = distMaze
+            auxPos = pos
+    pacmanPos = auxPos
+    distDots = 0
+    isPill = False
+    for item in dots:
+        (pos,distMaze) = mazeDistance(pacmanPos,item,problem.startingGameState,isPill,dots)
+        distDots = max(distDots,distMaze)
+    cost = distPills + distDots
+    return cost"""
 
+    #Better Heuristic V2
+    """pacmanPos = state[0]
+    prob = PositionSearchProblem(problem.startingGameState, start=pacmanPos, goal=None, warn=False, visualize=False)
+    pills = state[2]
+    dots = []
+    for i in xrange(state[1].width):
+        for j in xrange(state[1].height):
+            if state[1][i][j]:
+                dots.append((i,j))
+    #print dots
+    distPills = 0
+    auxPos = pacmanPos
+    isPill = True
+    pillsDis = search.bfs(prob,isPill,pills,dots)
+    #print pillsDis
+    for pos in pillsDis:
+        if pillsDis[pos] > distPills:
+            distPills = pillsDis[pos]
+            pacmanPos = pos
+    distDots = 0
+    isPill = False
+    prob = PositionSearchProblem(problem.startingGameState, start=pacmanPos, goal=None, warn=False, visualize=False)
+    dotsDis = search.bfs(prob,isPill,pills,dots)
+    for pos in dotsDis:
+        distDots = max(distDots,dotsDis[pos])
+    cost = distPills + distDots
+    return cost"""
 
 """
 Test your code with this agent

@@ -88,6 +88,41 @@ def general_ui_search(problem, frontier):
         visited[u] = 'black'
     return []
 
+"""def general_ui_search(problem, frontier, isPill,dots):
+    visited = {}
+    state = problem.getStartState()
+    frontier.push((state, []))
+    visited[state] = 'gray'
+    while not frontier.isEmpty():
+        u, actions = frontier.pop()
+        if problem.isGoalState(u):
+            return u,len(actions)
+        for v, action, cost in problem.getSuccessors2(u,isPill,dots):
+            if not v in visited:
+                visited[v] = 'gray'
+                frontier.push((v, actions + [action]))
+        visited[u] = 'black'
+    return state,[]"""
+
+"""def general_ui_search(problem, frontier, isPill, pills, dots):
+    visited = {}
+    state = problem.getStartState()
+    frontier.push(state)
+    visited[state] = 'gray'
+    d = {state: 0}
+    dist = {}
+    while not frontier.isEmpty():
+        u = frontier.pop()
+        for v, action, cost in problem.getSuccessors2(u,isPill,dots):
+            if not v in d:
+                d[v] = d[u] + 1
+                frontier.push(v)
+            if isPill and v in pills:
+                dist[v] = d[v]
+            if not isPill and v in dots:
+                dist[v] = d[v]
+    return dist"""
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
