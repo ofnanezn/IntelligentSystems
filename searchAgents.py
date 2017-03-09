@@ -535,15 +535,6 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
-"""def mazeDistance(point1, point2, gameState, isPill, dots):
-
-    x1, y1 = point1
-    x2, y2 = point2
-    walls = gameState.getWalls()
-    assert not walls[x1][y1], 'point1 is a wall: ' + str(point1)
-    assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
-    prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
-    return search.bfs(prob,isPill,dots)"""
 
 def mazeDistance(point1, point2, gameState, Pill):
 
@@ -588,12 +579,7 @@ class CornersAndCapsulesProblem(search.SearchProblem):
         successors = []
                 
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
+
             #Add your code here
             x,y = state[0]
             dx, dy = Actions.directionToVector(action)
@@ -615,37 +601,6 @@ class CornersAndCapsulesProblem(search.SearchProblem):
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
-    """def getSuccessors(self, state):
-        successors = []
-                
-        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            #Add your code here
-            ateSomething = False
-            x,y = state[0]
-            dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
-            hitsWall = self.walls[nextx][nexty]
-            if not hitsWall:
-                if len(state[2]) > 0 and not state[1][nextx][nexty]:
-                    nextFood = state[1].copy()
-                    nextCapsule = list(state[2])
-                    nextFood[nextx][nexty] = False
-                    if (nextx,nexty) in nextCapsule:
-                        nextCapsule.remove((nextx,nexty))
-                        ateSomething = True
-                    if ateSomething:
-                        successors.append( (((nextx, nexty), nextFood, tuple(nextCapsule)), action, 0) )
-                    else:
-                        successors.append( (((nextx, nexty), nextFood, tuple(nextCapsule)), action, 1) )
-                elif len(state[2]) == 0:
-                    nextFood = state[1].copy()
-                    ateSomething = nextFood[nextx][nexty]
-                    nextFood[nextx][nexty] = False
-                    if ateSomething:
-                        successors.append( (((nextx, nexty), nextFood, ()), action, 0) )
-                    else:
-                        successors.append( (((nextx, nexty), nextFood, ()), action, 1) )"""
-
     def getCostOfActions(self, actions):
         """
         Returns the cost of a particular sequence of actions.  If those actions
@@ -659,26 +614,99 @@ class CornersAndCapsulesProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
-def getClosestDot(pacmanPos,dots):
-    closestDot = (pacmanPos,0)
-    closest = sys.maxint
-    for item in dots:
-        Manhattan = abs(pacmanPos[0] - item[0]) + abs(pacmanPos[1] - item[1])
-        if Manhattan < closest:
-            closest = Manhattan
-            closestDot = (item,closest)
-    return closestDot
+def mazeDistance2(problem, pills, graph):
+    visited = {}
+    state = problem.getStartState()
+    frontier = []
+    frontier.append(state)
+    d = {state: 0}
+    dist = {}
+    if state not in graph:
+        graph[state] = {}
+    while frontier:
+        u = frontier.pop(0)
+        for v, action, cost in problem.getSuccessors(u):
+            if not v in d:
+                d[v] = d[u] + 1
+                frontier.append(v)
+            if v in pills:
+                if v not in graph:
+                    graph[v] = {}
+                graph[state][v] = d[v]
+                graph[v][state] = d[v]
 
-def getClosestPill(pacmanPos,pills):
-    closestPill = (pacmanPos,0)
-    closest = sys.maxint
-    for item in pills:
-        Manhattan = abs(pacmanPos[0] - item[0]) + abs(pacmanPos[1] - item[1])
-        if Manhattan < closest:
-            closest = Manhattan
-            closestPill = (item,closest)
-    return closestPill
 
+class UnionFind:
+    """Union-find data structure.
+
+    Each unionFind instance X maintains a family of disjoint sets of
+    hashable objects, supporting the following two methods:
+
+    - X[item] returns a name for the set containing the given item.
+      Each set is named by an arbitrarily-chosen one of its members; as
+      long as the set remains unchanged it will keep the same name. If
+      the item is not yet part of a set in X, a new singleton set is
+      created for it.
+
+    - X.union(item1, item2, ...) merges the sets containing each item
+      into a single larger set.  If any item is not yet part of a set
+      in X, it is added to X as one of the members of the merged set.
+    """
+
+    def __init__(self):
+        """Create a new empty union-find structure."""
+        self.weights = {}
+        self.parents = {}
+
+    def __getitem__(self, object):
+        """Find and return the name of the set containing the object."""
+
+        # check for previously unknown object
+        if object not in self.parents:
+            self.parents[object] = object
+            self.weights[object] = 1
+            return object
+
+        # find path of objects leading to the root
+        path = [object]
+        root = self.parents[object]
+        while root != path[-1]:
+            path.append(root)
+            root = self.parents[root]
+
+        # compress the path and return
+        for ancestor in path:
+            self.parents[ancestor] = root
+        return root
+        
+    def __iter__(self):
+        """Iterate through all items ever found or unioned by this structure."""
+        return iter(self.parents)
+
+    def union(self, *objects):
+        """Find the sets containing the objects and merge them all."""
+        roots = [self[x] for x in objects]
+        heaviest = max([(self.weights[r],r) for r in roots])[1]
+        for r in roots:
+            if r != heaviest:
+                self.weights[heaviest] += self.weights[r]
+                self.parents[r] = heaviest
+
+def MinimumSpanningTree(G):
+    """
+    Return the minimum spanning tree of an undirected graph G.
+    G should be represented in such a way that iter(G) lists its
+    vertices, iter(G[u]) lists the neighbors of u, G[u][v] gives the
+    length of edge u,v, and G[u][v] should always equal G[v][u].
+    The tree is returned as a list of edges.
+    """
+    subtrees = UnionFind()
+    tree = []
+    for W,u,v in sorted((G[u][v],u,v) for u in G for v in G[u]):
+        if subtrees[u] != subtrees[v]:
+            tree.append((u,v))
+            subtrees.union(u,v)
+    return tree
 
 def cornersAndCapsulesHeuristic(state, problem):
     """
@@ -693,135 +721,36 @@ def cornersAndCapsulesHeuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
-    #Heuristic 1
-    """pacmanPos = state[0]
-    steps = 0
-    for item in state[2]:
-        steps += abs(pacmanPos[0] - item[0]) + abs(pacmanPos[1] - item[1])
-    if len(state[2]) > 0:
-        steps /= len(state[2])
-    for i in xrange(state[1].width):
-        for j in xrange(state[1].height):
-            if state[1][i][j]:
-                steps += abs(pacmanPos[0] - i) + abs(pacmanPos[1] - j)
-    if state[1].count() > 0:
-        steps /= state[1].count()
-    return steps"""
-
-    #Better Heuristic
-    """pacmanPos = state[0]
-    pills = state[2]
-    dots = []
-    for i in xrange(state[1].width):
-        for j in xrange(state[1].height):
-            if state[1][i][j]:
-                dots.append((i,j))
-    #print dots
-    distPills = 0
-    for item in pills:
-         distPills = max(distPills,mazeDistance(pacmanPos,item,problem.startingGameState))
-    distDots = 0
-    for item in dots:
-        distDots = max(distDots,mazeDistance(pacmanPos,item,problem.startingGameState))
-    cost = max(distPills, distDots)
-    return  cost"""
-
-    #Heuristic 3
+    #Heuristic Min Spanning Tree V2
     pacmanPos = state[0]
-    pills = state[2]
+    pills = list(state[2])
     dots = []
     for i in xrange(state[1].width):
         for j in xrange(state[1].height):
             if state[1][i][j]:
                 dots.append((i,j))
-    #print dots
     distPills = 0
+    graph1 = {}
+    graph2 = {}
     auxPos = pacmanPos
-    for pos in pills:
-        distMaze = mazeDistance(pacmanPos,pos,problem.startingGameState,True)
-        if distMaze > distPills:
-            distPills = distMaze
-            auxPos = pos
-    pacmanPos = auxPos
-    distDots = 0
-    for pos in dots:
-        distMaze = mazeDistance(pacmanPos,pos,problem.startingGameState,False)
-        distDots = max(distDots,distMaze)
-    cost = distPills + distDots
-    #print distPills, distDots,state[0]
-    return cost
-
-    #Heuristic 4
-    """pacmanPos = state[0]
-    pills = state[2]
-    dots = []
-    for i in xrange(state[1].width):
-        for j in xrange(state[1].height):
-            if state[1][i][j]:
-                dots.append((i,j))
-    #print dots
-    steps = 0
     if len(pills) > 0:
-        for item in pills:
-            steps = max(steps,mazeDistance(pacmanPos,item,problem.startingGameState))
+        pills.append(pacmanPos)
     else:
-        for item in dots:
-            steps = max(steps,mazeDistance(pacmanPos,item,problem.startingGameState))
-    return  steps"""
-
-    #Better Heuristic 2
-    """pacmanPos = state[0]
-    pills = state[2]
-    dots = []
-    for i in xrange(state[1].width):
-        for j in xrange(state[1].height):
-            if state[1][i][j]:
-                dots.append((i,j))
-    #print dots
-    distPills = 0
-    auxPos = pacmanPos
-    isPill = True
+        dots.append(pacmanPos)
     for item in pills:
-        (pos,distMaze) = mazeDistance(pacmanPos,item,problem.startingGameState,isPill,dots)
-        if distMaze > distPills:
-            distPills = distMaze
-            auxPos = pos
-    pacmanPos = auxPos
-    distDots = 0
-    isPill = False
+        prob = PositionSearchProblem(problem.startingGameState,start=item,goal=None,warn=False,visualize=False,isPill=True)
+        mazeDistance2(prob,pills,graph1)
     for item in dots:
-        (pos,distMaze) = mazeDistance(pacmanPos,item,problem.startingGameState,isPill,dots)
-        distDots = max(distDots,distMaze)
-    cost = distPills + distDots
-    return cost"""
-
-    #Better Heuristic V2
-    """pacmanPos = state[0]
-    prob = PositionSearchProblem(problem.startingGameState, start=pacmanPos, goal=None, warn=False, visualize=False)
-    pills = state[2]
-    dots = []
-    for i in xrange(state[1].width):
-        for j in xrange(state[1].height):
-            if state[1][i][j]:
-                dots.append((i,j))
-    #print dots
-    distPills = 0
-    auxPos = pacmanPos
-    isPill = True
-    pillsDis = search.bfs(prob,isPill,pills,dots)
-    #print pillsDis
-    for pos in pillsDis:
-        if pillsDis[pos] > distPills:
-            distPills = pillsDis[pos]
-            pacmanPos = pos
-    distDots = 0
-    isPill = False
-    prob = PositionSearchProblem(problem.startingGameState, start=pacmanPos, goal=None, warn=False, visualize=False)
-    dotsDis = search.bfs(prob,isPill,pills,dots)
-    for pos in dotsDis:
-        distDots = max(distDots,dotsDis[pos])
-    cost = distPills + distDots
-    return cost"""
+        prob = PositionSearchProblem(problem.startingGameState,start=item,goal=None,warn=False,visualize=False,isPill=False)
+        mazeDistance2(prob,dots,graph2)
+    MST1 = MinimumSpanningTree(graph1)
+    MST2 = MinimumSpanningTree(graph2)
+    cost = 0
+    for u,v in MST1:
+        cost += graph1[u][v]
+    for u,v in MST2:
+        cost += graph2[u][v]
+    return cost
 
 """
 Test your code with this agent
