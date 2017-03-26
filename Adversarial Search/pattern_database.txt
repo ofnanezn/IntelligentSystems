@@ -1,0 +1,9 @@
+(1, [['R', 'B', 'B', 'B', None, 'R'], ['R', None, None, None, None, None], ['R', None, None, None, None, None], [None, None, None, None, None, None], [None, None, None, None, None, None], ['R', None, None, None, None, 'R']])=1
+(1, [['R', 'B', 'R', 'B', 'R', 'R'], ['B', 'R', 'B', 'R', 'B', 'R'], ['B', 'R', 'B', 'R', 'B', 'R'], ['B', None, None, None, None, None], [None, None, None, None, None, None], ['R', None, None, None, None, 'R']])=-1
+(0, [['R', 'R', 'B', 'B', None, 'R'], [None, 'B', 'R', 'R', 'R', 'B'], [None, None, 'R', 'B', None, None], [None, 'B', 'R', 'B', None, None], [None, 'R', 'B', 'R', None, None], ['R', None, 'B', 'R', None, 'R']])=1
+(0, [['R', 'R', 'B', 'B', None, 'R'], [None, 'B', 'R', 'R', 'R', 'B'], ['R', None, 'R', 'B', 'R', None], [None, 'B', 'R', 'B', 'B', None], [None, 'R', 'B', None, None, None], ['R', None, 'B', 'R', None, 'R']])=0
+(1, [['R', 'R', 'B', 'B', 'R', 'R'], ['B', 'R', 'B', 'B', None, None], [None, None, 'R', None, None, None], [None, None, None, None, None, None], [None, None, None, None, None, None], ['R', None, None, None, None, 'R']])=-1
+(1, [['R', 'R', 'B', 'B', 'R', 'R'], ['B', 'R', 'B', 'R', 'B', 'R'], ['B', 'R', 'B', None, None, None], [None, None, None, None, None, None], [None, None, None, None, None, None], ['R', None, None, None, None, 'R']])=-1
+(0, [['R', 'R', 'B', 'B', None, 'R'], [None, 'B', 'R', 'R', 'R', 'B'], [None, None, 'R', 'B', 'R', None], [None, 'B', 'R', 'B', None, None], [None, 'R', 'B', None, None, None], ['R', None, 'B', 'R', None, 'R']])=0
+(1, [['R', 'R', 'B', 'B', 'R', 'R'], ['B', 'R', 'B', 'R', 'B', 'R'], ['B', 'R', 'B', None, None, None], [None, None, None, None, None, None], [None, None, None, None, None, None], ['R', None, None, None, None, 'R']])=-1
+(1, [['R', 'R', 'B', 'R', 'B', 'R'], ['B', 'R', 'B', 'R', 'B', 'R'], ['B', 'R', 'B', None, None, None], [None, None, None, None, None, None], [None, None, None, None, None, None], ['R', None, None, None, None, 'R']])=-1
