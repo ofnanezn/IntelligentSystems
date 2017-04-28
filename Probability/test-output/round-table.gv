@@ -1,0 +1,12 @@
+digraph {
+	graph [size=3.5]
+		X [label=X]
+		Es [label=Es]
+		En [label=En]
+		Ee [label=Ee]
+		Ew [label=Ew]
+			X -> Es [constraint=false]
+			X -> En [constraint=false]
+			X -> Ee [constraint=false]
+			X -> Ew [constraint=false]
+}

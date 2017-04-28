@@ -1,0 +1,12 @@
+digraph {
+	graph [size=3.5]
+		X
+		Es
+		En
+		Ee
+		Ew
+			X -> Es
+			X -> En
+			X -> Ee
+			X -> Ew
+}
