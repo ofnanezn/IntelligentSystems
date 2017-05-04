@@ -1,12 +1,42 @@
 digraph {
 	graph [size=3.5]
-		X
-		Es
-		En
-		Ee
-		Ew
-			X -> Es
-			X -> En
-			X -> Ee
-			X -> Ew
+		X1
+		Es1
+		En1
+		Ee1
+		Ew1
+		X2
+		Es2
+		En2
+		Ee2
+		Ew2
+		X3
+		Es3
+		En3
+		Ee3
+		Ew3
+		X4
+		Es4
+		En4
+		Ee4
+		Ew4
+			X1 -> Es1
+			X1 -> En1
+			X1 -> Ee1
+			X1 -> Ew1
+			X1 -> X2
+			X2 -> Es2
+			X2 -> En2
+			X2 -> Ee2
+			X2 -> Ew2
+			X2 -> X3
+			X3 -> Es3
+			X3 -> En3
+			X3 -> Ee3
+			X3 -> Ew3
+			X3 -> X4
+			X4 -> Es4
+			X4 -> En4
+			X4 -> Ee4
+			X4 -> Ew4
 }
