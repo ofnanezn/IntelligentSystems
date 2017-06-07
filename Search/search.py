@@ -42,7 +42,7 @@ class SearchProblem:
         util.raiseNotDefined()
 
     def getSuccessors(self, state):
-        """
+        """	
           state: Search state
 
         For a given state, this should return a list of triples, (successor,
