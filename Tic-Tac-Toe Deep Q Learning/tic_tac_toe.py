@@ -1,4 +1,5 @@
 import copy
+import random
 
 # Red := -1
 # Blue := 1
@@ -120,11 +121,12 @@ class ofttt():
             return 10
         
     def reward(self, state, move, player):
-        "Return the value of this final state to player."
         #First, verify wether the board is full or not
+        victory = False
+        board = state[1]
+        (x,y) = move
+        board[x][y] = player
         if len(self.legal_moves(state)) == 0:
-            victory = False
-            board = state[1]
             #Now, we look for draw or victory using the test win function
             if player == 1:
                 for i in xrange(6):
@@ -139,14 +141,23 @@ class ofttt():
             #Draw Case
             if not victory:
                 return 0
-        #Lose case
-        if not test_win(state[1], move, 1):
-            return 0
-        if state[0] == player:
-            return -1
-        #Victory case
+        if player == 1:
+            for i in xrange(6):
+                for j in xrange(6):
+                    if board[i][j] == 1 and not victory:
+                        victory = test_win(board,(i,j),1)
         else:
+            for i in xrange(6):
+                for j in xrange(6):
+                    if board[i][j] == -1 and not victory:
+                        victory = test_win(board,(i,j),-1)
+        if not victory:
+            return 0
+        
+        if player == 1:
             return 1
+        else:
+            return -1
 
         
     def terminal_test(self, state):
@@ -178,7 +189,7 @@ class ofttt():
 
     def next_state(self, a_t, state):
         n_state = self.make_move(moves[a_t],state)
-        r_t = self.reward(n_state, moves[a_t], 0)
+        r_t = self.reward(state, moves[a_t], 1)
         terminal = self.terminal_test(n_state)
         return n_state, r_t, terminal
 
@@ -340,6 +351,11 @@ def query_player(game, state):
 
 def smart_player(game, state):
     return alphabeta_search(state, game, d = 2, eval_fn = fn)
+
+def random_player(game, state):
+    index = len(game.legal_moves)
+    play = random.randrange(0,index)
+    return moves[play]
 
 def play_game(game, *players):
     "Play an n-person, move-alternating game."
