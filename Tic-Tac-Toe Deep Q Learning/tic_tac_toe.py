@@ -11,7 +11,16 @@ moves = {
     12: (2,0), 13: (2,1), 14: (2,2), 15: (2,3), 16: (2,4), 17: (2,5),
     18: (3,0), 19: (3,1), 20: (3,2), 21: (3,3), 22: (3,4), 23: (3,5),
     24: (4,0), 25: (4,1), 26: (4,2), 27: (4,3), 28: (4,4), 29: (4,5),
-    30: (5,0), 31: (5,1), 32: (5,2), 33: (5,3), 34: (5,4), 35: (5,5),
+    30: (5,0), 31: (5,1), 32: (5,2), 33: (5,3), 34: (5,4), 35: (5,5)
+}
+
+positions = {
+    (0,0): 0, (0,1): 1, (0,2): 2, (0,3): 3, (0,4): 4, (0,5): 5,
+    (1,0): 6, (1,1): 7, (1,2): 8, (1,3): 9, (1,4): 10, (1,5): 11,
+    (2,0): 12, (2,1): 13, (2,2): 14, (2,3): 15, (2,4): 16, (2,5): 17,
+    (3,0): 18, (3,1): 19, (3,2): 20, (3,3): 21, (3,4): 22, (3,5): 23,
+    (4,0): 24, (4,1): 25, (4,2): 26, (4,3): 27, (4,4): 28, (4,5): 29,
+    (5,0): 30, (5,1): 31, (5,2): 32, (5,3): 33, (5,4): 34, (5,5): 35
 }
 
 class Game:
@@ -76,7 +85,7 @@ class ofttt():
         for i in xrange(6):
             for j in xrange(6):
                 if board[i][j] != 1 and board[i][j] != -1:
-                    legalMoves.append((i,j))
+                    legalMoves.append(positions[(i,j)])
         #Return the moves that are empty
         return legalMoves
 
@@ -87,7 +96,7 @@ class ofttt():
         to_move = state[0]
         if to_move == 1:
             next_board[x][y] = 1
-        elif to_move == 1:
+        elif to_move == -1:
             next_board[x][y] = -1
         #Return the complement of to_move which is the adversarial turn and the board with the corresponding move
         return (to_move*(-1), next_board)
@@ -121,9 +130,10 @@ class ofttt():
             return 10
         
     def reward(self, state, move, player):
+        #print player
         #First, verify wether the board is full or not
         victory = False
-        board = state[1]
+        board = copy.deepcopy(state[1])
         (x,y) = move
         board[x][y] = player
         if len(self.legal_moves(state)) == 0:
@@ -152,7 +162,7 @@ class ofttt():
                     if board[i][j] == -1 and not victory:
                         victory = test_win(board,(i,j),-1)
         if not victory:
-            return 0
+            return 0.1
         
         if player == 1:
             return 1
@@ -179,8 +189,13 @@ class ofttt():
 
     def display(self, state):
         "Print or otherwise display the state."
-        for i in state[1]:
-            print i
+        for i in xrange(len(state[1])):
+            for j in xrange(len(state[1][i])):
+                if state[1][i][j] == -1:
+                    print state[1][i][j],
+                else:
+                    print "", state[1][i][j],
+            print
 
     def successors(self, state):
         "Return a list of legal (move, state) pairs."
@@ -189,9 +204,9 @@ class ofttt():
 
     def next_state(self, a_t, state):
         n_state = self.make_move(moves[a_t],state)
-        r_t = self.reward(state, moves[a_t], 1)
+        r_t = self.reward(state, moves[a_t], state[0])
         terminal = self.terminal_test(n_state)
-        return n_state, r_t, terminal
+        return (n_state, r_t, terminal)
 
 def argmin(seq, fn):
     """Return an element with lowest fn(seq[i]) score; tie goes to first one.
